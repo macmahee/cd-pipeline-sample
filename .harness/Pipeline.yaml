@@ -12,10 +12,9 @@ pipeline:
         type: Deployment
         spec:
           serviceConfig:
-            serviceRef: k8service
+            serviceRef: nginx
             serviceDefinition:
               spec:
-                variables: []
                 manifests:
                   - manifest:
                       identifier: manifest
@@ -24,40 +23,42 @@ pipeline:
                         store:
                           type: Github
                           spec:
-                            connectorRef: testhelp
+                            connectorRef: githubconnector
                             gitFetchType: Branch
                             paths:
                               - default-k8s-manifests/Manifests/Files/templates
-                            repoName: harness-docs
+                            repoName: https://github.com/macmahee/
                             branch: main
                         skipResourceVersioning: false
                   - manifest:
-                      identifier: values
-                      type: Values
+                      identifier: manifest1
+                      type: K8sManifest
                       spec:
                         store:
                           type: Github
                           spec:
-                            connectorRef: testhelp
+                            connectorRef: githubconnector
                             gitFetchType: Branch
                             paths:
-                              - default-k8s-manifests/Manifests/Files/ng_values_dockercfg.yaml
-                            repoName: harness-docs
+                              - default-k8s-manifests/Manifests/Files/templates
+                            repoName: cd-pipeline-sample
                             branch: main
+                        skipResourceVersioning: false
+                        enableDeclarativeRollback: false
                 artifacts:
                   primary:
                     spec:
-                      connectorRef: harnessdocker
-                      imagePath: <+input>
+                      connectorRef: dockerconnector
+                      imagePath: library/nginx
                       tag: <+input>
                     type: DockerRegistry
               type: Kubernetes
           infrastructure:
-            environmentRef: K8Env
+            environmentRef: k8sinfra
             infrastructureDefinition:
               type: KubernetesDirect
               spec:
-                connectorRef: test
+                connectorRef: kubernetesinfraconnector
                 namespace: default
                 releaseName: release-<+INFRA_KEY>
             allowSimultaneousDeployments: false
